@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HASTE Item Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heavitas&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Heavitas', sans-serif;
+      background: #111;
+      color: white;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .status {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(18, 64px);
+      grid-template-rows: repeat(6, 64px);
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .item {
+      width: 64px;
+      height: 64px;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.3;
+      transition: 0.2s;
+      border-radius: 8px;
+      border: 2px solid transparent;
+    }
+    .item:hover {
+      border-color: transparent
+    }
+    .item.collected {
+      opacity: 0.9; /* Increased opacity for brighter collected items */
+    }
+    #reset-btn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: teal;
+      color: white;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    #reset-btn:hover {
+      background-color: darkcyan;
+    }
+    .settings {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+    }
+    .settings img {
+      width: 32px; /* Smaller size */
+      height: 32px; /* Smaller size */
+    }
+    .settings-menu {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 20px;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    .settings-menu label {
+      color: white;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    .settings-menu button {
+      background-color: teal;
+      color: white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>HASTE Item Tracker</h1>
+  <div class="status" id="status">Obtained 0/91</div>
+  <div id="tracker" class="grid"></div>
+  
+  <button id="reset-btn">Reset</button>
+
+  <div class="settings">
+    <!-- Windows settings cogwheel icon -->
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/settings.png" alt="settings" id="settings-icon">
+  </div>
+
+  <div class="settings-menu" id="settings-menu">
+    <label for="bg-color-picker">Choose Background Color:</label>
+    <input type="color" id="bg-color-picker-menu">
+    <br>
+    <button id="close-settings">Close</button>
+  </div>
+
+  <script>
+    const hasteItems = [
+      { id: 'rocket_boots', name: 'Rocket Boots', icon: 'https://the-haste.wiki/items/rocketboots.png' },
+      { id: 'energy_lash', name: 'Energy Lash', icon: 'https://the-haste.wiki/items/releasev1/energylash.png' },
+      { id: 'replenishing_vial', name: 'Replenishing Vial', icon: 'https://the-haste.wiki/items/replenishingvial.png' },
+      { id: 'mysterious_spring', name: 'Mysterious Spring', icon: 'https://the-haste.wiki/items/mysteriousspring.png' },
+      { id: 'standard_redirector', name: 'Standard Redirector', icon: 'https://the-haste.wiki/items/releasev1/standardredirector.png' },
+      { id: 'personal_matter_stabilizer', name: 'Personal Matter Stabilizer', icon: 'https://the-haste.wiki/items/releasev1/personal_matter_stabilizer.png' },
+      { id: 'time_dialation_thing', name: 'Time Dialation Thing', icon: 'https://the-haste.wiki/items/timedilationthing.png' },
+      { id: 'spark_dasher', name: 'Spark Dasher', icon: 'https://the-haste.wiki/items/releasev1/sparkdasher.png' },
+      { id: 'blood_engine', name: 'Blood Engine', icon: 'https://the-haste.wiki/items/releasev1/bloodengine.png' },
+      { id: 'velocity_powered_syringe', name: 'Velocity Powered Syringe', icon: 'https://the-haste.wiki/items/releasev1/velocitypoweredsyringe.png' },
+      { id: 'experimental_autopilot', name: 'Experimental Autopilot', icon: 'https://the-haste.wiki/items/releasev1/experimentalautopilot.png' },
+      { id: 'grunts_helmet', name: 'Grunt\'s Helmet', icon: 'https://the-haste.wiki/items/releasev1/gruntshelmet.png' },
+      { id: 'protective_medallion', name: 'Protective Medallion', icon: 'https://the-haste.wiki/items/releasev1/protectivemedallion.png' },
+      { id: 'impulse_activated_stabilizer', name: 'Impulse Activated Stabilizer', icon: 'https://the-haste.wiki/items/impulseactivatedstabilizer.png' },
+      { id: 'painful_coil', name: 'Painful Coil', icon: 'https://the-haste.wiki/items/painfulcoil.png' },
+      { id: 'well_earned_confidence', name: 'Well Earned Confidence', icon: 'https://the-haste.wiki/items/releasev1/wellearnedconfidence.png' },
+      { id: 'boostr_pog', name: 'BOOSTR POG', icon: 'https://the-haste.wiki/items/releasev1/boostrpog.png' },
+      { id: 'pungent_herbs', name: 'Pungent Herbs', icon: 'https://the-haste.wiki/items/releasev1/pungentherbs.png' },
+      { id: 'shortcut', name: 'Shortcut', icon: 'https://the-haste.wiki/items/shortcut.png' },
+      { id: 'tight_schedule', name: 'Tight Schedule', icon: 'https://the-haste.wiki/items/releasev1/tightschedule.png' },
+      { id: 'flashback', name: 'Flashback', icon: 'https://the-haste.wiki/items/releasev1/flashback.png' },
+      { id: 'adrenaline', name: 'Adrenaline', icon: 'https://the-haste.wiki/items/adrenaline.png' },
+      { id: 'restorative_maneuver', name: 'Restorative Manuever', icon: 'https://the-haste.wiki/items/restorativemanuever.png' },
+      { id: 'delayed_emergency_device', name: 'Delayed Emergency Device', icon: 'https://the-haste.wiki/items/releasev1/delayedemergencydevice.png' },
+      { id: 'n_dimensional_leaf_clover', name: 'N-Dimensional-leaf Clover', icon: 'https://the-haste.wiki/items/releasev1/n-dimensional-leafclover.png' },
+      { id: 'planar_reconfiguration', name: 'Planar Reconfiguration	', icon: 'https://the-haste.wiki/items/releasev1/planarreconfiguration.png' },
+      { id: 'atomic_timepiece', name: 'Atomic Timepiece', icon: 'https://the-haste.wiki/items/releasev1/atomictimepiece.png' },
+      { id: 'general_relativity', name: 'General Relativity', icon: 'https://the-haste.wiki/items/releasev1/generalrelativity.png' },
+      { id: 'overwound_pocketwatch', name: 'Overwound Pocketwatch', icon: 'https://the-haste.wiki/items/releasev1/overwoundpocketwatch.png' },
+      { id: 'shiny_anchor_pin', name: 'Shiny Anchor Pin', icon: 'https://the-haste.wiki/items/shinyanchorpin.png' },
+      { id: 'vitamins', name: 'Vitamins', icon: 'https://the-haste.wiki/items/releasev1/vitamins.png' },
+      { id: 'heirs_determination', name: 'Heir\'s Determination', icon: 'https://the-haste.wiki/items/releasev1/heirsdetermination.png' },
+      { id: 'perpetual_motion_machine', name: 'Perpetual Motion Machine', icon: 'https://the-haste.wiki/items/perpetualmotionmachine.png' },
+      { id: 'plutonium_coin', name: 'Plutonium Coin', icon: 'https://the-haste.wiki/items/perpetualmotionmachine.png' },
+      { id: 'performance_based_health_insurance', name: 'Performance Based Health Insurance', icon: 'https://the-haste.wiki/items/releasev1/performancebasedhealthinsurance.png' },
+      { id: 'impact_activated_healing_drone', name: 'Impact Activated Healing Drone', icon: 'Impact Activated Healing Drone' },
+      { id: 'leaders_pipe', name: 'Leaders Pipe', icon: 'https://the-haste.wiki/items/releasev1/leadershippipe.png' },
+      { id: 'karma', name: 'Karma', icon: 'https://the-haste.wiki/items/releasev1/karma.png' },
+      { id: 'brittle_breastplate', name: 'Brittle Breastplate', icon: 'https://the-haste.wiki/items/releasev1/brittlebreastplate.png' },
+      { id: 'steel_hat_lining', name: '	Steel Hat Lining', icon: 'https://the-haste.wiki/items/releasev1/steelhatlining.png' },
+      { id: 'portable_harvester', name: 'Portable Harvester', icon: 'https://the-haste.wiki/items/releasev1/portableharvester.png' },
+      { id: 'otherwordly_contact', name: 'Otherworldly Contact', icon: 'https://the-haste.wiki/items/releasev1/otherworldlycontact.png' },
+      { id: 'personal_gravity_enhancer', name: 'Personal Gravity Enhancer', icon: 'https://the-haste.wiki/items/releasev1/personalgravityenhancer.png' },
+      { id: 'timeline_shifter', name: 'Timeline Shifter', icon: 'https://the-haste.wiki/items/releasev1/timelineshifter.png' },
+      { id: 'recyclable_rocket', name: 'Recyclable Rocket', icon: 'https://the-haste.wiki/items/releasev1/recyclablerocket.png' },
+      { id: 'emergency_shoes', name: 'Emergency Shoes', icon: 'https://the-haste.wiki/items/releasev1/emergencyshoes.png' },
+      { id: 'fragile_confidence', name: 'Fragile Confidence', icon: 'https://the-haste.wiki/items/releasev1/fragileconfidence.png' },
+      { id: 'dynamo_treadmill', name: 'Dynamo Treadmill', icon: 'https://the-haste.wiki/items/releasev1/dynamotreadmill.png' },
+      { id: 'distance_based_health_insurance', name: 'Distance-Based Health Insurance', icon: 'https://the-haste.wiki/items/releasev1/distance-basedhealthinsurance.png' },
+      { id: 'reheated_soup', name: 'Reheated Soup', icon: 'https://the-haste.wiki/items/releasev1/reheatedsoup.png' },
+      { id: 'intangibility', name: 'Intangibility', icon: 'https://the-haste.wiki/items/releasev1/intangibility.png' },
+      { id: 'greed_machine', name: 'Greed Machine', icon: 'https://the-haste.wiki/items/releasev1/greedmachine.png' },
+      { id: 'timeline_recalibrator', name: 'Timeline Recalibrator', icon: 'https://the-haste.wiki/items/releasev1/timelinerecalibrator.png' },
+      { id: 'ring_materializer', name: 'Ring Materializer', icon: 'https://the-haste.wiki/items/releasev1/ringmaterializer.png' },
+      { id: 'fragile_taco', name: 'Fragile Taco', icon: 'https://the-haste.wiki/items/releasev1/fragiletaco.png' },
+      { id: 'speedy_recovery', name: 'Speedy Recovery', icon: 'https://the-haste.wiki/items/releasev1/speedyrecovery.png' },
+      { id: 'timeline_refactor', name: 'Timeline Refactor', icon: 'https://the-haste.wiki/items/releasev1/timelinerefactor.png' },
+      { id: 'shimmering_condenser', name: 'Shimmering Condenser', icon: 'https://the-haste.wiki/items/releasev1/shimmeringcondenser.png' },
+      { id: 'transition_slingshot', name: 'Transition Slingshot', icon: 'https://the-haste.wiki/items/releasev1/transitionslingshot.png' },
+      { id: 'void_charger', name: 'Void Charger', icon: 'https://the-haste.wiki/items/releasev1/voidcharger.png' },
+      { id: 'pocket_snack', name: 'Pocket Snack', icon: 'https://the-haste.wiki/items/releasev1/pocketsnack.png' },
+      { id: 'void_compressor', name: 'Void Compressor', icon: 'https://the-haste.wiki/items/releasev1/voidcompressor.png' },
+      { id: 'spark_powered_propeller', name: 'Spark Powered Propeller', icon: 'https://the-haste.wiki/items/releasev1/sparkpoweredpropeller.png' },
+      { id: 'spark_furnace', name: 'Spark Furnace', icon: 'https://the-haste.wiki/items/sparkfurnace.png' },
+      { id: 'mortar_pestle', name: 'Mortar Pestle', icon: 'https://the-haste.wiki/items/mortarpestle.png' },
+      { id: 'friendly_looking_star', name: 'Friendly Looking Star', icon: 'https://the-haste.wiki/items/releasev1/friendlylookingstar.png' },
+      { id: 'golden_necklace', name: 'Golden Necklace', icon: 'https://the-haste.wiki/items/goldennecklace.png' },
+      { id: 'secret_technique_instructions', name: 'Secret Technique Instructions', icon: 'https://the-haste.wiki/items/releasev1/secrettechniqueinstructions.png' },
+      { id: 'overcomplicated_coin', name: 'Overcomplicated Coin', icon: 'https://the-haste.wiki/items/releasev1/overcomplicatedcoin.png' },
+      { id: 'overclocked_medical_drone', name: 'Overclocked Medical Drone', icon: 'https://the-haste.wiki/items/releasev1/overclockedmedicaldrone.png' },
+      { id: 'clown_shoes', name: 'Clown Shoes', icon: 'https://the-haste.wiki/items/releasev1/clownshoes.png' },
+      { id: 'aromatic_herbs', name: '	Aromatic Herbs', icon: 'https://the-haste.wiki/items/aromaticherbs.png' },
+      { id: 'low_grade_timeline_swapper', name: 'Low Grade Timeline Swapper', icon: 'https://the-haste.wiki/items/releasev1/lowgradetimelineswapper.png' },
+      { id: 'bitter_herbs', name: 'Bitter Herbs', icon: 'https://the-haste.wiki/items/releasev1/bitterherbs.png' },
+      { id: 'extreme_herbs', name: 'Extreme Herbs', icon: 'https://the-haste.wiki/items/releasev1/extremeherbs.png' },
+      { id: 'momentum_recalibrator', name: 'Momentum Recalibrator', icon: 'https://the-haste.wiki/items/momentumrecalibrator.png' },
+      { id: 'jackpot', name: '	Jackpot', icon: 'https://the-haste.wiki/items/releasev1/jackpot.png' },
+      { id: 'high_risk_investment', name: 'High Risk Investment', icon: 'https://the-haste.wiki/items/releasev1/highriskinvestment.png' },
+      { id: 'steady_investment', name: 'Steady Investment', icon: 'https://the-haste.wiki/items/releasev1/steadyinvestment.png' },
+      { id: 'interest', name: 'Interest', icon: 'https://the-haste.wiki/items/releasev1/interest.png' },
+      { id: 'dangerous_investment_scheme', name: 'Dangerous Investment Scheme', icon: 'https://the-haste.wiki/items/releasev1/dangerousinvestmentscheme.png' },
+      { id: 'big_spark_magnet', name: 'Big Spark Magnet', icon: 'https://the-haste.wiki/items/bigsparkmagnet.png' },
+      { id: '400_leaf_clover', name: '400-leaf Clover', icon: 'https://the-haste.wiki/items/releasev1/400-leafclover.png' },
+      { id: 'heart_shaped_mirror', name: 'Heart Shaped Mirror', icon: 'https://the-haste.wiki/items/releasev1/heartshapedmirror.png' },
+      { id: 'big_pumpkin', name: 'Big Pumpkin', icon: 'https://the-haste.wiki/items/bigpumpkin.png' },
+      { id: 'big_squash', name: 'Big Squash', icon: 'https://the-haste.wiki/items/releasev1/bigsquash.png' },
+      { id: 'quick_taco', name: 'Quick Taco', icon: 'https://the-haste.wiki/items/releasev1/quicktaco.png' },
+      { id: 'growth_potential', name: 'Growth Potential', icon: 'https://the-haste.wiki/items/releasev1/growthpotential.png' },
+      { id: 'instant_compensation_machine', name: 'Instant Compensation Machine', icon: 'https://the-haste.wiki/items/releasev1/instantcompensationmachine.png' },
+      { id: 'experimental_thrusters', name: 'Experimental Thrusters', icon: 'https://the-haste.wiki/items/releasev1/experimentalthrusters.png' },
+      { id: 'wingspan', name: 'Wingspan', icon: 'https://the-haste.wiki/items/releasev1/wingspan.png' }
+    ];
+
+    const tracker = document.getElementById('tracker');
+    const status = document.getElementById('status');
+    const saveKey = 'haste-tracker';
+    let collected = JSON.parse(localStorage.getItem(saveKey)) || {};
+
+    function renderItems() {
+      tracker.innerHTML = '';
+      let obtainedCount = 0;
+      hasteItems.forEach(item => {
+        const div = document.createElement('div');
+        div.classList.add('item');
+        div.title = item.name;
+        div.style.backgroundImage = `url(${item.icon})`;
+        if (collected[item.id]) {
+          div.classList.add('collected');
+          obtainedCount++;
+        }
+
+        div.onclick = () => {
+          collected[item.id] = !collected[item.id];
+          localStorage.setItem(saveKey, JSON.stringify(collected));
+          renderItems();
+        };
+
+        tracker.appendChild(div);
+      });
+      status.innerHTML = `Obtained ${obtainedCount}/${hasteItems.length}`;
+    }
+
+    // Reset button functionality
+    document.getElementById('reset-btn').onclick = () => {
+      localStorage.removeItem(saveKey);
+      collected = {}; // Clear collected state
+      renderItems();  // Re-render items with the reset state
+    };
+
+    // Background color change functionality
+    document.getElementById('bg-color-picker-menu').addEventListener('input', (e) => {
+      document.body.style.backgroundColor = e.target.value;
+    });
+
+    // Open and close settings menu
+    document.getElementById('settings-icon').onclick = () => {
+      const settingsMenu = document.getElementById('settings-menu');
+      settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
+    };
+
+    // Close settings menu
+    document.getElementById('close-settings').onclick = () => {
+      document.getElementById('settings-menu').style.display = 'none';
+    };
+
+    renderItems();
+  </script>
+</body>
+</html>
