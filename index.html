@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HASTE Item Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Heavitas&display=swap" rel="stylesheet">
   <style>
@@ -30,30 +30,27 @@
     }
     .item .tooltip {
       position: absolute;
-  top: calc(100% + 10px); /* Position tooltip slightly below item */
-  left: 50%;
-  transform: translateX(-50%);
-  visibility: hidden; /* Make it hidden by default */
-  opacity: 0; /* Fully invisible by default */
-  background-color: transparent; /* No background color */
-  padding: 0;
-  border-radius: 8px;
-  z-index: 10;
-  transition: none; /* No transition for opacity or visibility */
+      top: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      visibility: hidden;
+      opacity: 0;
+      background-color: transparent;
+      padding: 0;
+      border-radius: 8px;
+      z-index: 10;
+      transition: none;
     }
-
     .item:hover .tooltip {
       visibility: visible;
-      opacity: 1; /* Fully visible tooltip on hover */
+      opacity: 1;
     }
-
     .tooltip img {
       width: 300px;
       height: auto;
       border-radius: 8px;
       box-shadow: none;
     }
-
     .item {
       width: 64px;
       height: 64px;
@@ -65,11 +62,9 @@
       border: none;
       position: relative;
     }
-
     .item:hover {
       opacity: 1;
     }
-
     #reset-btn {
       display: block;
       margin: 20px auto;
@@ -81,28 +76,21 @@
       cursor: pointer;
       border-radius: 5px;
     }
-
     #reset-btn:hover {
       background-color: darkcyan;
     }
-
     .settings {
       position: absolute;
       top: 20px;
       right: 20px;
       cursor: pointer;
-      z-index: 20; /* Ensure the settings icon is always on top */
+      z-index: 20;
     }
-
     .settings img {
       width: 32px;
       height: 32px;
     }
-
     .search-bar {
-      position: absolute;
-      top: 20px;
-      right: 60px;
       background-color: #222;
       border: none;
       color: white;
@@ -111,7 +99,19 @@
       font-size: 14px;
       width: 200px;
     }
-
+    .filter-container {
+      display: inline-block;
+      margin-left: 10px;
+    }
+    #rarity-filter {
+      font-family: 'Heavitas', sans-serif;
+      background-color: #222;
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
     .settings-menu {
       display: none;
       position: absolute;
@@ -121,15 +121,8 @@
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      z-index: 10; /* Ensure the settings menu stays below the settings icon */
+      z-index: 10;
     }
-
-    .settings-menu label {
-      color: white;
-      font-size: 16px;
-      margin-right: 10px;
-    }
-
     .settings-menu button {
       background-color: teal;
       color: white;
@@ -138,196 +131,767 @@
       cursor: pointer;
       border-radius: 5px;
     }
+    .controls {
+      position: absolute;
+      top: 20px;
+      right: 100px;
+    }
   </style>
 </head>
 <body>
   <h1>HASTE Item Tracker</h1>
   <div class="status" id="status">Obtained 0/91</div>
+  <div class="controls">
+    <input type="text" id="search-bar" class="search-bar" placeholder="Search">
+    <div class="filter-container">
+      <select id="rarity-filter">
+        <option value="all" style="color: white;">All rarities</option>
+        <option value="common" style="color: #00ff00;">Common</option>
+        <option value="rare" style="color: #00bfff;">Rare</option>
+        <option value="epic" style="color: #a020f0;">Epic</option>
+        <option value="legendary" style="color: gold;">Legendary</option>
+      </select>
+    </div>
+  </div>
   <div id="tracker" class="grid"></div>
-  
   <button id="reset-btn">Reset</button>
-
   <div class="settings">
     <img src="https://img.icons8.com/ios-filled/50/ffffff/settings.png" alt="settings" id="settings-icon">
   </div>
-
-  <input type="text" id="search-bar" class="search-bar" placeholder="Search">
-
   <div class="settings-menu" id="settings-menu">
     <label for="bg-color-picker">Choose Background Color:</label>
     <input type="color" id="bg-color-picker-menu">
     <br>
     <button id="close-settings">Close</button>
   </div>
-
   <script>
-  const hasteItems = [
-  { id: 'rocket_boots', name: 'Rocket Boots', icon: 'https://the-haste.wiki/items/rocketboots.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/rocketbootstooltip.png?raw=true' },
-      { id: 'energy_lash', name: 'Energy Lash', icon: 'https://the-haste.wiki/items/releasev1/energylash.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/energylashtooltip.png?raw=true' },
-      { id: 'replenishing_vial', name: 'Replenishing Vial', icon: 'https://the-haste.wiki/items/replenishingvial.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/repleneshingvial.png?raw=true' },
-      { id: 'mysterious_spring', name: 'Mysterious Spring', icon: 'https://the-haste.wiki/items/mysteriousspring.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/mysteriousspringtoooltip.png?raw=true' },
-      { id: 'standard_redirector', name: 'Standard Redirector', icon: 'https://the-haste.wiki/items/releasev1/standardredirector.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/standardredirectortooltip.png?raw=true' },
-      { id: 'personal_matter_stabilizer', name: 'Personal Matter Stabilizer', icon: 'https://the-haste.wiki/items/releasev1/personal_matter_stabilizer.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/peronsalmatterstabilizer.png?raw=true' },
-      { id: 'time_dialation_thing', name: 'Time Dialation Thing', icon: 'https://the-haste.wiki/items/timedilationthing.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/timedialationthingtooltip.png?raw=true' },
-      { id: 'spark_dasher', name: 'Spark Dasher', icon: 'https://the-haste.wiki/items/releasev1/sparkdasher.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/sparkdashertooltip.png?raw=true' },
-      { id: 'blood_engine', name: 'Blood Engine', icon: 'https://the-haste.wiki/items/releasev1/bloodengine.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/bloodenginetooltip.png?raw=true' },
-      { id: 'velocity_powered_syringe', name: 'Velocity Powered Syringe', icon: 'https://the-haste.wiki/items/releasev1/velocitypoweredsyringe.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/velocitypoweredsyringetooltip.png?raw=true' },
-      { id: 'experimental_autopilot', name: 'Experimental Autopilot', icon: 'https://the-haste.wiki/items/releasev1/experimentalautopilot.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/experimentalautopilottooltip.png?raw=true' },
-      { id: 'grunts_helmet', name: 'Grunt\'s Helmet', icon: 'https://the-haste.wiki/items/releasev1/gruntshelmet.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/grunthelmettooltip.png?raw=true' },
-      { id: 'protective_medallion', name: 'Protective Medallion', icon: 'https://the-haste.wiki/items/releasev1/protectivemedallion.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/protectivemedalliontt.png?raw=true' },
-      { id: 'impulse_activated_stabilizer', name: 'Impulse Activated Stabilizer', icon: 'https://the-haste.wiki/items/impulseactivatedstabilizer.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/impulseactivedstabilizertooltip.png?raw=true' },
-      { id: 'painful_coil', name: 'Painful Coil', icon: 'https://the-haste.wiki/items/painfulcoil.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/paintfulcoilTT.png?raw=true' },
-      { id: 'well_earned_confidence', name: 'Well Earned Confidence', icon: 'https://the-haste.wiki/items/releasev1/wellearnedconfidence.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/wellearnedconfidendTT.png?raw=true' },
-      { id: 'boostr_pog', name: 'BOOSTR POG', icon: 'https://the-haste.wiki/items/releasev1/boostrpog.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/boostrpogtt.png?raw=true' },
-      { id: 'pungent_herbs', name: 'Pungent Herbs', icon: 'https://the-haste.wiki/items/releasev1/pungentherbs.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/pungentherbstt.png?raw=true' },
-      { id: 'shortcut', name: 'Shortcut', icon: 'https://the-haste.wiki/items/shortcut.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/shortcut.png?raw=true' },
-      { id: 'tight_schedule', name: 'Tight Schedule', icon: 'https://the-haste.wiki/items/releasev1/tightschedule.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/tightschedulett.png?raw=true' },
-      { id: 'flashback', name: 'Flashback', icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/flashback.png?raw=true', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/flashbacktt.png?raw=true' },
-      { id: 'adrenaline', name: 'Adrenaline', icon: 'https://the-haste.wiki/items/adrenaline.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/adrenalinett.png?raw=true' },
-      { id: 'restorative_maneuver', name: 'Restorative Manuever', icon: 'https://the-haste.wiki/items/restorativemanuever.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/restorativemaneuvertt.png?raw=true' },
-      { id: 'delayed_emergency_device', name: 'Delayed Emergency Device', icon: 'https://the-haste.wiki/items/releasev1/delayedemergencydevice.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/delayedemergencydevicett.png?raw=true' },
-      { id: 'n_dimensional_leaf_clover', name: 'N-Dimensional-leaf Clover', icon: 'https://the-haste.wiki/items/releasev1/n-dimensional-leafclover.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/ndimensionalleaveclovertt.png?raw=true'},
-      { id: 'planar_reconfiguration', name: 'Planar Reconfiguration	', icon: 'https://the-haste.wiki/items/releasev1/planarreconfiguration.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/planarreconfigurationtt.png?raw=true'},
-      { id: 'atomic_timepiece', name: 'Atomic Timepiece', icon: 'https://the-haste.wiki/items/releasev1/atomictimepiece.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/atomictimepiecett.png?raw=true' },
-      { id: 'general_relativity', name: 'General Relativity', icon: 'https://the-haste.wiki/items/releasev1/generalrelativity.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/generalrelativitytt.png?raw=true' },
-      { id: 'overwound_pocketwatch', name: 'Overwound Pocketwatch', icon: 'https://the-haste.wiki/items/releasev1/overwoundpocketwatch.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/overwoundpocketwatchtt.png?raw=true'},
-      { id: 'shiny_anchor_pin', name: 'Shiny Anchor Pin', icon: 'https://the-haste.wiki/items/shinyanchorpin.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/shinyanchorpintt.png?raw=true' },
-      { id: 'vitamins', name: 'Vitamins', icon: 'https://the-haste.wiki/items/releasev1/vitamins.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/vitaminstt.png?raw=true' },
-      { id: 'heirs_determination', name: 'Heir\'s Determination', icon: 'https://the-haste.wiki/items/releasev1/heirsdetermination.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/herisdeterminationtt.png?raw=true'},
-      { id: 'perpetual_motion_machine', name: 'Perpetual Motion Machine', icon: 'https://the-haste.wiki/items/perpetualmotionmachine.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/perpetualmotionmachinett.png?raw=true' },
-      { id: 'plutonium_coin', name: 'Plutonium Coin', icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/plutoniumcoin.png?raw=true' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/plutoniumcointt.png?raw=true'},
-      { id: 'performance_based_health_insurance', name: 'Performance Based Health Insurance', icon: 'https://the-haste.wiki/items/releasev1/performancebasedhealthinsurance.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/performancebasedhealthinsurancett.png?raw=true'},
-      { id: 'impact_activated_healing_drone', name: 'Impact Activated Healing Drone', icon: 'https://the-haste.wiki/items/releasev1/impactactivatedhealingdrone.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/impactactivatedhealingdronett.png?raw=true'},
-      { id: 'leaders_pipe', name: 'Leaders Pipe', icon: 'https://the-haste.wiki/items/releasev1/leadershippipe.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/leadershippipett.png?raw=true'},
-      { id: 'karma', name: 'Karma', icon: 'https://the-haste.wiki/items/releasev1/karma.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/karmatt.png?raw=true'},
-      { id: 'brittle_breastplate', name: 'Brittle Breastplate', icon: 'https://the-haste.wiki/items/releasev1/brittlebreastplate.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/brittlebreastplatett.png?raw=true'},
-      { id: 'steel_hat_lining', name: '	Steel Hat Lining', icon: 'https://the-haste.wiki/items/releasev1/steelhatlining.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/steelhateliningtt.png?raw=true' },
-      { id: 'portable_harvester', name: 'Portable Harvester', icon: 'https://the-haste.wiki/items/releasev1/portableharvester.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/portableharvestertt.png?raw=true'},
-      { id: 'otherwordly_contact', name: 'Otherworldly Contact', icon: 'https://the-haste.wiki/items/releasev1/otherworldlycontact.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/otherworldlycontacttt.png?raw=true'},
-      { id: 'personal_gravity_enhancer', name: 'Personal Gravity Enhancer', icon: 'https://the-haste.wiki/items/releasev1/personalgravityenhancer.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/personalgravityenhancertt.png?raw=true' },
-      { id: 'timeline_shifter', name: 'Timeline Shifter', icon: 'https://the-haste.wiki/items/releasev1/timelineshifter.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/timelineshiftertt.png?raw=true' },
-      { id: 'recyclable_rocket', name: 'Recyclable Rocket', icon: 'https://the-haste.wiki/items/releasev1/recyclablerocket.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/recyclablerockettt.png?raw=true'},
-      { id: 'emergency_shoes', name: 'Emergency Shoes', icon: 'https://the-haste.wiki/items/releasev1/emergencyshoes.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/emergencyshoestt.png?raw=true'},
-      { id: 'fragile_confidence', name: 'Fragile Confidence', icon: 'https://the-haste.wiki/items/releasev1/fragileconfidence.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/fragileconfidencett.png?raw=true'},
-      { id: 'dynamo_treadmill', name: 'Dynamo Treadmill', icon: 'https://the-haste.wiki/items/releasev1/dynamotreadmill.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/dynamotrealmilltt.png?raw=true' },
-      { id: 'distance_based_health_insurance', name: 'Distance-Based Health Insurance', icon: 'https://the-haste.wiki/items/releasev1/distance-basedhealthinsurance.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/distancebasedhealthinsurancett.png?raw=true' },
-      { id: 'reheated_soup', name: 'Reheated Soup', icon: 'https://the-haste.wiki/items/releasev1/reheatedsoup.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/reheatedsouptt.png?raw=true'},
-      { id: 'intangibility', name: 'Intangibility', icon: 'https://the-haste.wiki/items/releasev1/intangibility.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/intangibilitytt.png?raw=true'},
-      { id: 'greed_machine', name: 'Greed Machine', icon: 'https://the-haste.wiki/items/releasev1/greedmachine.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/greedmachinett.png?raw=true' },
-      { id: 'timeline_recalibrator', name: 'Timeline Recalibrator', icon: 'https://the-haste.wiki/items/releasev1/timelinerecalibrator.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/timelinerecalibratortt.png?raw=true'},
-      { id: 'ring_materializer', name: 'Ring Materializer', icon: 'https://the-haste.wiki/items/releasev1/ringmaterializer.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/ringmaterializertt.png?raw=true' },
-      { id: 'fragile_taco', name: 'Fragile Taco', icon: 'https://the-haste.wiki/items/releasev1/fragiletaco.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/fragiletacott.png?raw=true' },
-      { id: 'speedy_recovery', name: 'Speedy Recovery', icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/speedyrecovery.png?raw=true' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/speedyrecoverytt.png?raw=true'},
-      { id: 'timeline_refactor', name: 'Timeline Refactor', icon: 'https://the-haste.wiki/items/releasev1/timelinerefactor.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/timelinerefactortt.png?raw=true' },
-      { id: 'shimmering_condenser', name: 'Shimmering Condenser', icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/shimmeringcondensor.png?raw=true' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/shimmeringcondensertt.png?raw=true'},
-      { id: 'transition_slingshot', name: 'Transition Slingshot', icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/transitionslingshot.png?raw=true' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/transitionslingshottt.png?raw=true'},
-      { id: 'void_charger', name: 'Void Charger', icon: 'https://the-haste.wiki/items/releasev1/voidcharger.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/voidchargertt.png?raw=true'},
-      { id: 'pocket_snack', name: 'Pocket Snack', icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/pocketsnack.png?raw=true' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/pocketsnack.png?raw=true'},
-      { id: 'void_compressor', name: 'Void Compressor', icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/voidcompressor.png?raw=true' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/voidcompressortt.png?raw=true'},
-      { id: 'spark_powered_propeller', name: 'Spark Powered Propeller', icon: 'https://the-haste.wiki/items/releasev1/sparkpoweredpropeller.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/sparkpoweredpropellertt.png?raw=true'},
-      { id: 'spark_furnace', name: 'Spark Furnace', icon: 'https://the-haste.wiki/items/sparkfurnace.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/sparkfurnacett.png?raw=true'},
-      { id: 'mortar_pestle', name: 'Mortar and Pestle', icon: 'https://the-haste.wiki/items/mortarpestle.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/mortarandpestlett.png?raw=true' },
-      { id: 'friendly_looking_star', name: 'Friendly Looking Star', icon: 'https://the-haste.wiki/items/releasev1/friendlylookingstar.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/friendlylookingstartt.png?raw=true'},
-      { id: 'golden_necklace', name: 'Golden Necklace', icon: 'https://the-haste.wiki/items/goldennecklace.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/goldennecklacett.png?raw=true'},
-      { id: 'secret_technique_instructions', name: 'Secret Technique Instructions', icon: 'https://the-haste.wiki/items/releasev1/secrettechniqueinstructions.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/secrettechniqueinsturctionstt.png?raw=true'},
-      { id: 'overcomplicated_coin', name: 'Overcomplicated Coin', icon: 'https://the-haste.wiki/items/releasev1/overcomplicatedcoin.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/overcomplicatedcointt.png?raw=true'},
-      { id: 'overclocked_medical_drone', name: 'Overclocked Medical Drone', icon: 'https://the-haste.wiki/items/releasev1/overclockedmedicaldrone.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/overclockedmedicaldronett.png?raw=true'},
-      { id: 'clown_shoes', name: 'Clown Shoes', icon: 'https://the-haste.wiki/items/releasev1/clownshoes.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/clownshoestt.png?raw=true'},
-      { id: 'aromatic_herbs', name: '	Aromatic Herbs', icon: 'https://the-haste.wiki/items/aromaticherbs.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/aromaticherbstt.png?raw=true'},
-      { id: 'low_grade_timeline_swapper', name: 'Low Grade Timeline Swapper', icon: 'https://the-haste.wiki/items/releasev1/lowgradetimelineswapper.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/lowgradetimelineswappertt.png?raw=true'},
-      { id: 'bitter_herbs', name: 'Bitter Herbs', icon: 'https://the-haste.wiki/items/releasev1/bitterherbs.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/bitterherbstt.png?raw=true'},
-      { id: 'extreme_herbs', name: 'Extreme Herbs', icon: 'https://the-haste.wiki/items/releasev1/extremeherbs.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/extremeherbstt.png?raw=true'},
-      { id: 'momentum_recalibrator', name: 'Momentum Recalibrator', icon: 'https://the-haste.wiki/items/momentumrecalibrator.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/momentumrecalibratortt.png?raw=true'},
-      { id: 'jackpot', name: '	Jackpot', icon: 'https://the-haste.wiki/items/releasev1/jackpot.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/jackpottt.png?raw=true'},
-      { id: 'high_risk_investment', name: 'High Risk Investment', icon: 'https://the-haste.wiki/items/releasev1/highriskinvestment.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/highriskinvestment.png?raw=true'},
-      { id: 'steady_investment', name: 'Steady Investment', icon: 'https://the-haste.wiki/items/releasev1/steadyinvestment.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/steadyinvestmenttt.png?raw=true' },
-      { id: 'interest', name: 'Interest', icon: 'https://the-haste.wiki/items/releasev1/interest.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/interesttt.png?raw=true'},
-      { id: 'dangerous_investment_scheme', name: 'Dangerous Investment Scheme', icon: 'https://the-haste.wiki/items/releasev1/dangerousinvestmentscheme.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/dangerousinvestmentschemett.png?raw=true'},
-      { id: 'big_spark_magnet', name: 'Big Spark Magnet', icon: 'https://the-haste.wiki/items/bigsparkmagnet.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/bigsparkmagnettt.png?raw=true' },
-      { id: '400_leaf_clover', name: '400-leaf Clover', icon: 'https://the-haste.wiki/items/releasev1/400-leafclover.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/400leafclovertt.png?raw=true'},
-      { id: 'heart_shaped_mirror', name: 'Heart Shaped Mirror', icon: 'https://the-haste.wiki/items/releasev1/heartshapedmirror.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/heartshapedmirrortt.png?raw=true'},
-      { id: 'big_pumpkin', name: 'Big Pumpkin', icon: 'https://the-haste.wiki/items/bigpumpkin.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/bigpumpkintt.png?raw=true' },
-      { id: 'big_squash', name: 'Big Squash', icon: 'https://the-haste.wiki/items/releasev1/bigsquash.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/bigsquashtt.png?raw=true'},
-      { id: 'quick_taco', name: 'Quick Taco', icon: 'https://the-haste.wiki/items/releasev1/quicktaco.png', tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/quicktacott.png?raw=true' },
-      { id: 'growth_potential', name: 'Growth Potential', icon: 'https://the-haste.wiki/items/releasev1/growthpotential.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/growthpotentialtt.png?raw=true'},
-      { id: 'instant_compensation_machine', name: 'Instant Compensation Machine', icon: 'https://the-haste.wiki/items/releasev1/instantcompensationmachine.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/instantcompensationmachinett.png?raw=true'},
-      { id: 'experimental_thrusters', name: 'Experimental Thrusters', icon: 'https://the-haste.wiki/items/releasev1/experimentalthrusters.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/experimentalthrusterstt.png?raw=true'},
-      { id: 'wingspan', name: 'Wingspan', icon: 'https://the-haste.wiki/items/releasev1/wingspan.png' , tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/wingspantt.png?raw=true'}
-    // Add the rest of your items here
-  ];
+    const hasteItems = [
+{ 
+  id: 'rocket_boots', 
+  name: 'Rocket Boots', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/rocketboots.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/rocketbootstooltip.png?raw=true'
+},
+{ 
+  id: 'energy_lash', 
+  name: 'Energy Lash', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/energylash.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/energylashtooltip.png?raw=true' 
+},
+{ 
+  id: 'replenishing_vial', 
+  name: 'Replenishing Vial', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/replenishingvial.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/repleneshingvial.png?raw=true' 
+},
+{ 
+  id: 'mysterious_spring', 
+  name: 'Mysterious Spring', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/mysteriousspring.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/mysteriousspringtoooltip.png?raw=true' 
+},
+{ 
+  id: 'standard_redirector', 
+  name: 'Standard Redirector', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/standardredirector.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/standardredirectortooltip.png?raw=true' 
+},
+{
+  id: 'personal_matter_stabilizer', 
+  name: 'Personal Matter Stabilizer', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/personal_matter_stabilizer.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/peronsalmatterstabilizer.png?raw=true' 
+},
+{ 
+  id: 'time_dialation_thing', 
+  name: 'Time Dialation Thing', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/timedilationthing.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/timedialationthingtooltip.png?raw=true' 
+},
+{ 
+  id: 'spark_dasher', 
+  name: 'Spark Dasher', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/sparkdasher.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/sparkdashertooltip.png?raw=true' 
+},
+{ 
+  id: 'blood_engine', 
+  name: 'Blood Engine', 
+  rarity: 'legendary',
+  icon: 'https://the-haste.wiki/items/releasev1/bloodengine.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/bloodenginetooltip.png?raw=true' 
+},
+{ 
+  id: 'velocity_powered_syringe', 
+  name: 'Velocity Powered Syringe', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/velocitypoweredsyringe.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/velocitypoweredsyringetooltip.png?raw=true' 
+},
+{ 
+  id: 'experimental_autopilot', 
+  name: 'Experimental Autopilot', 
+  rarity: 'legendary',
+  icon: 'https://the-haste.wiki/items/releasev1/experimentalautopilot.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/experimentalautopilottooltip.png?raw=true' },
+{ 
+  id: 'grunts_helmet', 
+  name: 'Grunt\'s Helmet', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/gruntshelmet.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/grunthelmettooltip.png?raw=true' 
+},
+{ 
+  id: 'protective_medallion', 
+  name: 'Protective Medallion', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/protectivemedallion.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/protectivemedalliontt.png?raw=true' 
+},
+{ 
+  id: 'impulse_activated_stabilizer', 
+  name: 'Impulse Activated Stabilizer', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/impulseactivatedstabilizer.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/impulseactivedstabilizertooltip.png?raw=true' 
+},
+{ 
+  id: 'painful_coil', 
+  name: 'Painful Coil', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/painfulcoil.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/paintfulcoilTT.png?raw=true' 
+},
+{ 
+  id: 'well_earned_confidence',
+  name: 'Well Earned Confidence', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/wellearnedconfidence.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/wellearnedconfidendTT.png?raw=true' 
+},
+{ 
+  id: 'boostr_pog', 
+  name: 'BOOSTR POG', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/boostrpog.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/boostrpogtt.png?raw=true' 
+},
+{ 
+  id: 'pungent_herbs', 
+  name: 'Pungent Herbs', 
+  rarity: 'rare', 
+  icon: 'https://the-haste.wiki/items/releasev1/pungentherbs.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/pungentherbstt.png?raw=true' 
+},
+{ 
+  id: 'shortcut', 
+  name: 'Shortcut', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/shortcut.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/shortcut.png?raw=true' 
+},
+{ 
+  id: 'tight_schedule', 
+  name: 'Tight Schedule', 
+  rarity: 'rare', 
+  icon: 'https://the-haste.wiki/items/releasev1/tightschedule.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/tightschedulett.png?raw=true' 
+},
+{ 
+  id: 'flashback', 
+  name: 'Flashback', 
+  rarity: 'legendary', 
+  icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/flashback.png?raw=true', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/flashbacktt.png?raw=true' 
+},
+{ 
+  id: 'adrenaline', 
+  name: 'Adrenaline', 
+  rarity: 'common', 
+  icon: 'https://the-haste.wiki/items/adrenaline.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/adrenalinett.png?raw=true' 
+},
+{ 
+  id: 'restorative_maneuver', 
+  name: 'Restorative Manuever', 
+  rarity: 'common', 
+  icon: 'https://the-haste.wiki/items/restorativemanuever.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/restorativemaneuvertt.png?raw=true' 
+},
+{ 
+  id: 'delayed_emergency_device', 
+  name: 'Delayed Emergency Device', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/delayedemergencydevice.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/delayedemergencydevicett.png?raw=true' 
+},
+{ 
+  id: 'n_dimensional_leaf_clover', 
+  name: 'N-Dimensional-leaf Clover', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/n-dimensional-leafclover.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/ndimensionalleaveclovertt.png?raw=true'
+},
+{ 
+  id: 'planar_reconfiguration', 
+  name: 'Planar Reconfiguration	', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/planarreconfiguration.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/planarreconfigurationtt.png?raw=true'
+},
+{ 
+  id: 'atomic_timepiece', 
+  name: 'Atomic Timepiece', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/atomictimepiece.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/atomictimepiecett.png?raw=true' 
+},
+{ 
+  id: 'general_relativity', 
+  name: 'General Relativity', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/generalrelativity.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/generalrelativitytt.png?raw=true' 
+},
+{ 
+  id: 'overwound_pocketwatch', 
+  name: 'Overwound Pocketwatch', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/overwoundpocketwatch.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/overwoundpocketwatchtt.png?raw=true'
+},
+{ 
+  id: 'shiny_anchor_pin', 
+  name: 'Shiny Anchor Pin', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/shinyanchorpin.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/shinyanchorpintt.png?raw=true' 
+},
+{ 
+  id: 'vitamins', 
+  name: 'Vitamins', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/vitamins.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/vitaminstt.png?raw=true' 
+},
+{ 
+  id: 'heirs_determination', 
+  name: 'Heir\'s Determination', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/heirsdetermination.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/herisdeterminationtt.png?raw=true'
+},
+{ 
+  id: 'perpetual_motion_machine', 
+  name: 'Perpetual Motion Machine', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/perpetualmotionmachine.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/perpetualmotionmachinett.png?raw=true' 
+},
+{ 
+  id: 'plutonium_coin', 
+  name: 'Plutonium Coin', 
+  rarity: 'common',
+  icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/plutoniumcoin.png?raw=true' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/plutoniumcointt.png?raw=true'
+},
+{ 
+  id: 'performance_based_health_insurance', 
+  name: 'Performance Based Health Insurance', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/performancebasedhealthinsurance.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/performancebasedhealthinsurancett.png?raw=true'
+},
+{ 
+  id: 'impact_activated_healing_drone', 
+  name: 'Impact Activated Healing Drone', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/impactactivatedhealingdrone.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/impactactivatedhealingdronett.png?raw=true'
+},
+{ 
+  id: 'leaders_pipe', 
+  name: 'Leaders Pipe', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/leadershippipe.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/leadershippipett.png?raw=true'
+},
+{ 
+  id: 'karma', 
+  name: 'Karma', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/karma.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/karmatt.png?raw=true'
+},
+{ 
+  id: 'brittle_breastplate', 
+  name: 'Brittle Breastplate', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/brittlebreastplate.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/brittlebreastplatett.png?raw=true'
+},
+{ 
+  id: 'steel_hat_lining', 
+  name: '	Steel Hat Lining', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/steelhatlining.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/steelhateliningtt.png?raw=true' 
+},
+{ 
+  id: 'portable_harvester', 
+  name: 'Portable Harvester', 
+  rarity: 'legendary',
+  icon: 'https://the-haste.wiki/items/releasev1/portableharvester.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/portableharvestertt.png?raw=true'
+},
+{ 
+  id: 'otherwordly_contact', 
+  name: 'Otherworldly Contact', 
+  rarity: 'legendary',
+  icon: 'https://the-haste.wiki/items/releasev1/otherworldlycontact.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/otherworldlycontacttt.png?raw=true'
+},
+{ 
+  id: 'personal_gravity_enhancer', 
+  name: 'Personal Gravity Enhancer', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/personalgravityenhancer.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/personalgravityenhancertt.png?raw=true' 
+},
+{ 
+  id: 'timeline_shifter', 
+  name: 'Timeline Shifter', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/timelineshifter.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/timelineshiftertt.png?raw=true' 
+},
+{ 
+  id: 'recyclable_rocket', 
+  name: 'Recyclable Rocket', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/recyclablerocket.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/recyclablerockettt.png?raw=true'
+},
+{ 
+  id: 'emergency_shoes', 
+  name: 'Emergency Shoes', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/emergencyshoes.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/emergencyshoestt.png?raw=true'
+},
+{ 
+  id: 'fragile_confidence', 
+  name: 'Fragile Confidence', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/fragileconfidence.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/fragileconfidencett.png?raw=true'
+},
+{ 
+  id: 'dynamo_treadmill', 
+  name: 'Dynamo Treadmill', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/releasev1/dynamotreadmill.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/dynamotrealmilltt.png?raw=true' 
+},
+{ 
+  id: 'distance_based_health_insurance', 
+  name: 'Distance-Based Health Insurance', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/releasev1/distance-basedhealthinsurance.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/distancebasedhealthinsurancett.png?raw=true' 
+},
+{ 
+  id: 'reheated_soup', 
+  name: 'Reheated Soup', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/reheatedsoup.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/reheatedsouptt.png?raw=true'
+},
+{ 
+  id: 'intangibility', 
+  name: 'Intangibility', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/intangibility.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/intangibilitytt.png?raw=true'
+},
+{ 
+  id: 'greed_machine', 
+  name: 'Greed Machine', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/greedmachine.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/greedmachinett.png?raw=true' 
+},
+{ 
+  id: 'timeline_recalibrator', 
+  name: 'Timeline Recalibrator', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/timelinerecalibrator.png' , 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/timelinerecalibratortt.png?raw=true'
+},
+{ 
+  id: 'ring_materializer', 
+  name: 'Ring Materializer', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/ringmaterializer.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/ringmaterializertt.png?raw=true' 
+},
+{ 
+  id: 'fragile_taco', 
+  name: 'Fragile Taco', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/fragiletaco.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/fragiletacott.png?raw=true' 
+},
+{ 
+  id: 'speedy_recovery', 
+  name: 'Speedy Recovery', 
+  rarity: 'rare',
+  icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/speedyrecovery.png?raw=true',
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/speedyrecoverytt.png?raw=true'
+},
+{ 
+  id: 'timeline_refactor', 
+  name: 'Timeline Refactor', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/timelinerefactor.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/timelinerefactortt.png?raw=true' 
+},
+{ 
+  id: 'shimmering_condenser', 
+  name: 'Shimmering Condenser', 
+  rarity: 'common',
+  icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/shimmeringcondensor.png?raw=true', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/shimmeringcondensertt.png?raw=true'
+},
+{ 
+  id: 'transition_slingshot', 
+  name: 'Transition Slingshot', 
+  rarity: 'common',
+  icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/transitionslingshot.png?raw=true',
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/transitionslingshottt.png?raw=true'
+},
+{ 
+  id: 'void_charger', 
+  name: 'Void Charger', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/releasev1/voidcharger.png',
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/voidchargertt.png?raw=true'
+},
+{ 
+  id: 'pocket_snack', 
+  name: 'Pocket Snack', 
+  rarity: 'common',
+  icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/pocketsnack.png?raw=true',
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/pocketsnack.png?raw=true'
+},
+{ 
+  id: 'void_compressor', 
+  name: 'Void Compressor', 
+  rarity: 'common',
+  icon: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/itemtracker/voidcompressor.png?raw=true', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/voidcompressortt.png?raw=true'
+},
+{ 
+  id: 'spark_powered_propeller', 
+  name: 'Spark Powered Propeller', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/sparkpoweredpropeller.png',
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/sparkpoweredpropellertt.png?raw=true'
+},
+{ 
+  id: 'spark_furnace', 
+  name: 'Spark Furnace', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/sparkfurnace.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/sparkfurnacett.png?raw=true'
+},
+{ 
+  id: 'mortar_pestle', 
+  name: 'Mortar and Pestle', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/mortarpestle.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/mortarandpestlett.png?raw=true' 
+},
+{ 
+  id: 'friendly_looking_star', 
+  name: 'Friendly Looking Star', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/friendlylookingstar.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/friendlylookingstartt.png?raw=true'
+},
+{ 
+  id: 'golden_necklace', 
+  name: 'Golden Necklace', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/goldennecklace.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/goldennecklacett.png?raw=true'
+},
+{ 
+  id: 'secret_technique_instructions', 
+  name: 'Secret Technique Instructions', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/secrettechniqueinstructions.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/secrettechniqueinsturctionstt.png?raw=true'
+},
+{ 
+  id: 'overcomplicated_coin', 
+  name: 'Overcomplicated Coin', 
+  rarity: 'legendary',
+  icon: 'https://the-haste.wiki/items/releasev1/overcomplicatedcoin.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/overcomplicatedcointt.png?raw=true'
+},
+{ 
+  id: 'overclocked_medical_drone', 
+  name: 'Overclocked Medical Drone', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/overclockedmedicaldrone.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/overclockedmedicaldronett.png?raw=true'
+},
+{ 
+  id: 'clown_shoes', 
+  name: 'Clown Shoes', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/clownshoes.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/clownshoestt.png?raw=true'
+},
+{ 
+  id: 'aromatic_herbs', 
+  name: '	Aromatic Herbs', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/aromaticherbs.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/aromaticherbstt.png?raw=true'
+},
+{ 
+  id: 'low_grade_timeline_swapper', 
+  name: 'Low Grade Timeline Swapper', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/lowgradetimelineswapper.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/lowgradetimelineswappertt.png?raw=true'
+},
+{ 
+  id: 'bitter_herbs', 
+  name: 'Bitter Herbs', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/bitterherbs.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/bitterherbstt.png?raw=true'
+},
+{ 
+  id: 'extreme_herbs', 
+  name: 'Extreme Herbs', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/extremeherbs.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/extremeherbstt.png?raw=true'
+},
+{ 
+  id: 'momentum_recalibrator', 
+  name: 'Momentum Recalibrator', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/momentumrecalibrator.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/momentumrecalibratortt.png?raw=true'
+},
+{ 
+  id: 'jackpot', 
+  name: '	Jackpot', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/jackpot.png' 
+  ,tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/jackpottt.png?raw=true'
+},
+{ 
+  id: 'high_risk_investment', 
+  name: 'High Risk Investment', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/highriskinvestment.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/highriskinvestment.png?raw=true'
+},
+{ 
+  id: 'steady_investment', 
+  name: 'Steady Investment', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/steadyinvestment.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/steadyinvestmenttt.png?raw=true' 
+},
+{ 
+  id: 'interest', 
+  name: 'Interest', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/interest.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/interesttt.png?raw=true'
+},
+{ 
+  id: 'dangerous_investment_scheme', 
+  name: 'Dangerous Investment Scheme', 
+  rarity: 'legendary',
+  icon: 'https://the-haste.wiki/items/releasev1/dangerousinvestmentscheme.png',
+   tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/dangerousinvestmentschemett.png?raw=true'
+  },
+{ 
+  id: 'big_spark_magnet', 
+  name: 'Big Spark Magnet', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/bigsparkmagnet.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/bigsparkmagnettt.png?raw=true' 
+},
+{ 
+  id: '400_leaf_clover', 
+  name: '400-leaf Clover', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/400-leafclover.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/400leafclovertt.png?raw=true'
+},
+{ 
+  id: 'heart_shaped_mirror', 
+  name: 'Heart Shaped Mirror', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/heartshapedmirror.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/heartshapedmirrortt.png?raw=true'
+},
+{ 
+  id: 'big_pumpkin', 
+  name: 'Big Pumpkin', 
+  rarity: 'common',
+  icon: 'https://the-haste.wiki/items/bigpumpkin.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/bigpumpkintt.png?raw=true' 
+},
+{ 
+  id: 'big_squash', 
+  name: 'Big Squash', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/bigsquash.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/bigsquashtt.png?raw=true'
+},
+{ 
+  id: 'quick_taco', 
+  name: 'Quick Taco', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/quicktaco.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/quicktacott.png?raw=true' 
+},
+{ 
+  id: 'growth_potential', 
+  name: 'Growth Potential', 
+  rarity: 'rare',
+  icon: 'https://the-haste.wiki/items/releasev1/growthpotential.png',
+   tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/growthpotentialtt.png?raw=true'
+  },
+{ 
+  id: 'instant_compensation_machine', 
+  name: 'Instant Compensation Machine', 
+  rarity: 'epic',
+  icon: 'https://the-haste.wiki/items/releasev1/instantcompensationmachine.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/instantcompensationmachinett.png?raw=true'
+},
+{ 
+  id: 'experimental_thrusters', 
+  name: 'Experimental Thrusters', 
+  rarity: 'legendary',
+  icon: 'https://the-haste.wiki/items/releasev1/experimentalthrusters.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/experimentalthrusterstt.png?raw=true'
+},
+{ 
+  id: 'wingspan', 
+  name: 'Wingspan', 
+  rarity: 'legendary',
+  icon: 'https://the-haste.wiki/items/releasev1/wingspan.png', 
+  tooltipImage: 'https://github.com/Jesuitical/haste-item-tracker/blob/main/tooltips/wingspantt.png?raw=true'
+}
+];
 
-  // Initialize the tracker
-  const tracker = document.getElementById('tracker');
-  let obtainedCount = 0;
+    const tracker = document.getElementById('tracker');
+    let obtainedCount = 0;
 
-  hasteItems.forEach(item => {
-    const itemElement = document.createElement('div');
-    itemElement.classList.add('item');
-    itemElement.id = item.id;
-    itemElement.style.backgroundImage = `url(${item.icon})`;
-    itemElement.title = "";
+    hasteItems.forEach(item => {
+      const itemElement = document.createElement('div');
+      itemElement.classList.add('item');
+      itemElement.id = item.id;
+      itemElement.style.backgroundImage = `url(${item.icon})`;
+      itemElement.dataset.rarity = item.rarity;
 
-    // Tooltip for large image display
-    const tooltip = document.createElement('div');
-    tooltip.classList.add('tooltip');
-    tooltip.innerHTML = `<img src="${item.tooltipImage}" alt="${item.name}">`;
-    itemElement.appendChild(tooltip);
+      const tooltip = document.createElement('div');
+      tooltip.classList.add('tooltip');
+      tooltip.innerHTML = `<img src="${item.tooltipImage}" alt="${item.name}">`;
+      itemElement.appendChild(tooltip);
 
-    // Click event to toggle item obtained state
-    itemElement.addEventListener('click', () => {
-      if (itemElement.style.opacity === '0.3' || itemElement.style.opacity === '') {
-        itemElement.style.opacity = '1';
-        obtainedCount++;
-      } else {
-        itemElement.style.opacity = '0.3';
-        obtainedCount--;
-      }
+      itemElement.addEventListener('click', () => {
+        if (itemElement.style.opacity === '0.3' || itemElement.style.opacity === '') {
+          itemElement.style.opacity = '1';
+          obtainedCount++;
+        } else {
+          itemElement.style.opacity = '0.3';
+          obtainedCount--;
+        }
 
-      obtainedCount = Math.max(obtainedCount, 0);
+        obtainedCount = Math.max(obtainedCount, 0);
+        document.getElementById('status').textContent = `Obtained ${obtainedCount}/91`;
+      });
+
+      tracker.appendChild(itemElement);
+    });
+
+    // Search filter
+    document.getElementById('search-bar').addEventListener('input', (e) => {
+      const search = e.target.value.toLowerCase();
+      document.querySelectorAll('.item').forEach(item => {
+        const name = item.id.toLowerCase();
+        item.style.display = name.includes(search) ? 'block' : 'none';
+      });
+    });
+
+    // Rarity filter
+    const rarityFilter = document.getElementById('rarity-filter');
+    const rarityColors = {
+      all: 'white',
+      common: '#00ff00',
+      rare: '#00bfff',
+      epic: '#a020f0',
+      legendary: 'gold'
+    };
+
+    rarityFilter.addEventListener('change', () => {
+      const selected = rarityFilter.value;
+      rarityFilter.style.color = rarityColors[selected] || 'white';
+    });
+
+    // Set initial color on page load
+    rarityFilter.style.color = rarityColors[rarityFilter.value];
+
+    rarityFilter.addEventListener('change', (e) => {
+      const selectedRarity = e.target.value;
+      document.querySelectorAll('.item').forEach(item => {
+        if (selectedRarity === 'all' || item.dataset.rarity === selectedRarity) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+
+    // Reset
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      document.querySelectorAll('.item').forEach(item => item.style.opacity = '0.3');
+      obtainedCount = 0;
       document.getElementById('status').textContent = `Obtained ${obtainedCount}/91`;
     });
 
-    tracker.appendChild(itemElement);
-  });
-
-  // Search bar functionality
-  const searchBar = document.getElementById('search-bar');
-  searchBar.addEventListener('input', (event) => {
-    const searchTerm = event.target.value.toLowerCase();
-    const items = document.querySelectorAll('.item');
-    items.forEach(item => {
-      const itemName = item.id.toLowerCase();
-      if (itemName.includes(searchTerm)) {
-        item.style.display = 'block';
-      } else {
-        item.style.display = 'none';
-      }
+    // Background color picker
+    document.getElementById('bg-color-picker-menu').addEventListener('input', (event) => {
+      document.body.style.backgroundColor = event.target.value;
     });
-  });
 
-  // Reset button functionality
-  document.getElementById('reset-btn').addEventListener('click', () => {
-    const items = document.querySelectorAll('.item');
-    items.forEach(item => item.style.opacity = '0.3');
-    obtainedCount = 0;
-    document.getElementById('status').textContent = `Obtained ${obtainedCount}/91`;
-  });
-
-  // Settings menu toggle
-  const settingsIcon = document.getElementById('settings-icon');
-  const settingsMenu = document.getElementById('settings-menu');
-  settingsIcon.addEventListener('click', () => {
-    settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
-  });
-
-  document.getElementById('close-settings').addEventListener('click', () => {
-    settingsMenu.style.display = 'none';
-  });
-
-  // Background color picker functionality
-  document.getElementById('bg-color-picker-menu').addEventListener('input', (event) => {
-    document.body.style.backgroundColor = event.target.value;
-  });
+    // Settings menu toggle
+    document.getElementById('settings-icon').addEventListener('click', () => {
+      document.getElementById('settings-menu').style.display = 'block';
+    });
+    document.getElementById('close-settings').addEventListener('click', () => {
+      document.getElementById('settings-menu').style.display = 'none';
+    });
   </script>
 </body>
 </html>
